@@ -104,7 +104,8 @@ def exitWindow():
     resetMousePosition()
 
 def insertPasswordToField():
-    pyautogui.typewrite(PASSWORD)
+    pyperclip.copy(PASSWORD)
+    pyautogui.hotkey("ctrl","v")
     
 def pressButtonAndWait(positionToClick,sleep = 0):
     result = findButtonImageAndPress(positionToClick)
