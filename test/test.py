@@ -1,23 +1,21 @@
-import pyperclip
-import pyautogui
+from datetime import datetime
+from threading import Timer
 
-def closest (num, arr):
-    curr = arr[0]
-    for val in arr:
-        if abs (num - val) < abs (num - curr):
-            curr = val
-    return curr
+def on_10th_second():
+    print('yo-ho-ho', datetime.now())
 
 
-array = [464,614,764]
-number = 475
-#print(closest(number, array))
-#print(pyautogui.position())
+def shedule(func, nth_sec):
+    wait = 7200
+    Timer(wait, func).start()
+    Timer(wait + 1, lambda: shedule(func, nth_sec)).start()
 
-def checkOnExceedCount(count):
-    return count+1 if count < 3 else 0
 
-print(checkOnExceedCount(0))
+
+shedule(on_10th_second, 10)
+
+print('ok')
+
 
 
 #center house:

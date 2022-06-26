@@ -3,6 +3,8 @@ import pyautogui
 import pyperclip
 import time
 from PIL import Image
+from datetime import datetime
+from threading import Timer
 
 #ERROR 401 Cant Find image
 
@@ -17,9 +19,6 @@ INPUTFIELD_PNG_PATH = "Png Files/Input Field.png"
 FULLSAMPLE_PNG_PATH = "Png Files/Full_"
 
 PASSWORD = "Bb1249ArTiS"
-
-homeOffsetX = 82
-homeOffsetY = 82
 
 hexagonOffsetX = 200
 hexagonOffsetY = 150
@@ -131,11 +130,13 @@ def collectHoneyFromHive(hivePosition,isFirstLoadGame):
     result = pressButtonAndWait(COLLECTBUTTON_PNG_PATH,sleep = 2.5)
     while result == 401:  
         result = pressButtonAndWait(COLLECTBUTTON_PNG_PATH,sleep = 2.5)
-
-    if isFirstLoadGame:
-        findButtonImageAndPress(INPUTFIELD_PNG_PATH)
-        insertPasswordToField()
-        findButtonImageAndPress(APPROVEBUTTON_PNG_PATH)
+    time.sleep(10)
+    result = findButtonImageAndPress(INPUTFIELD_PNG_PATH)
+    if result == 401:
+        exitWindow()
+        return 401
+    insertPasswordToField()
+    findButtonImageAndPress(APPROVEBUTTON_PNG_PATH)
         
     # 10 second collecting
     time.sleep(10)
@@ -152,8 +153,15 @@ def getPositionOfFullTitle(countFullTitle):
     position = imagesearch(FULL_PNG_PATH)
     return position
 
+
+def shedule(func, nth_sec):
+    wait = 7200
+    Timer(wait, func).start()
+    Timer(wait + 1, lambda: shedule(func, nth_sec)).start()
+
 def run():
     isFirstLoadGame = True
+    shedule(reloadSite, 10)
     while gameLoaded:
         countFullTitle = 1
         fullTitlePosition = getPositionOfFullTitle(countFullTitle)
@@ -168,10 +176,7 @@ def run():
         result = collectHoneyFromHive(centerFullTitle,isFirstLoadGame)
         if result != 401:
             isFirstLoadGame = False
-            
-reloadSite()
-gameLoaded = True
-run()
+
 '''
 homeCenterPosition = findHomeOnScreen()
 countHivesInRow = [2,2,1]
@@ -179,3 +184,7 @@ hivesPositions = checkAllHives(countHivesInRow)
 
 run()
 '''
+
+
+gameLoaded = True
+run()
