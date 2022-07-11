@@ -1,8 +1,10 @@
 from python_imagesearch.imagesearch import imagesearch
-from PIL import Image
 import pyautogui
 import pyperclip
 import time
+from PIL import Image
+from datetime import datetime
+from threading import Timer
 
 #ERROR 401 Cant Find image
 
@@ -11,38 +13,15 @@ HOME_PNG_PATH = "Png Files/home1.png"
 COLLECTBUTTON_PNG_PATH = "Png Files/Collect Button.png"
 PAWBUTTON_PNG_PATH = "Png Files/Paw Button.png"
 EXITBUTTON_PNG_PATH = "Png Files/Exit Button.png"
-PLAYBUTTON_PNG_PATH = "Png Files/Play Button1.png"
+PLAYBUTTON_PNG_PATH = "Png Files/Play Button.png"
 APPROVEBUTTON_PNG_PATH = "Png Files/Approve Button.png"
-INPUTFIELD_PNG_PATH = "Png Files/Password.png"
+INPUTFIELD_PNG_PATH = "Png Files/Input Field.png"
 FULLSAMPLE_PNG_PATH = "Png Files/Full_"
-ERROR_PNG_PATH = "Png Files/Error.png"
-ERRORBUTTON_PNG_PATH = "Png Files/Error button.png"
 
-
-PASSWORD = ["Bb1249ArTiS","L178Mm2XYB"]
+PASSWORD = "Bb1249ArTiS"
 
 hexagonOffsetX = 200
 hexagonOffsetY = 150
-
-def searchAndAddBrowsersPositions(countBrowsers):
-    browsersPositions = []
-    for sec in range(1,6):
-        print(sec)
-        time.sleep(1)
-
-    start = pyautogui.position()
-    pyautogui.click()
-
-    time.sleep(1)
-
-    offsetX = 50
-
-    startX,startY = start
-    for i in range(countBrowsers):
-        nextPos = (startX+(offsetX*i),startY)
-        browsersPositions.append(nextPos)
-        
-    return browsersPositions        
 
 def findHomeOnScreen():
     homePosition = imagesearch(HOME_PNG_PATH)
@@ -105,10 +84,15 @@ def resetMousePosition():
     pyautogui.click(200,200)
 
 def reloadSite():
+    alertText = 'Сделайте главным окно браузера(игры)'
+    alertTitle = 'Предупреждение'
+    alertButtonText = 'OK'
     reloadSiteHotKey = "F5"
-    time.sleep(1)
-    pyautogui.press(reloadSiteHotKey)
+    
+    pyautogui.alert(text = alertText, title = alertTitle, button = alertButtonText)
     time.sleep(5)
+    pyautogui.press(reloadSiteHotKey)
+    time.sleep(10)
     result = findButtonImageAndPress(PLAYBUTTON_PNG_PATH)
     while result == 401:
         result = findButtonImageAndPress(PLAYBUTTON_PNG_PATH)
@@ -118,8 +102,8 @@ def exitWindow():
     findButtonImageAndPress(EXITBUTTON_PNG_PATH)
     resetMousePosition()
 
-def insertPasswordToField(currentIndexFarm):
-    pyperclip.copy(PASSWORD[currentIndexFarm])
+def insertPasswordToField():
+    pyperclip.copy(PASSWORD)
     pyautogui.hotkey("ctrl","v")
     
 def pressButtonAndWait(positionToClick,sleep = 0):
@@ -135,91 +119,72 @@ def moveMouseAndClickToHive(hivePosition):
     pyautogui.click(clicks=2, interval=0.5)
     time.sleep(1)
 
-def collectHoneyFromHive(hivePosition,currentIndexFarm):
+def collectHoneyFromHive(hivePosition,isFirstLoadGame):
+    
     moveMouseAndClickToHive(hivePosition)
-    result = pressButtonAndWait(PAWBUTTON_PNG_PATH,sleep = 2.5)
-    countTry = 0
-    while result == 401:
-        result = pressButtonAndWait(PAWBUTTON_PNG_PATH,sleep = 2.5)
-        countTry+=1
-        if countTry >= 100:
-            return 401
-        
+    
+    result = pressButtonAndWait(PAWBUTTON_PNG_PATH,sleep = 5)
+    if result == 401:
+        return 401
+    
     result = pressButtonAndWait(COLLECTBUTTON_PNG_PATH,sleep = 2.5)
-    countTry = 0
     while result == 401:  
         result = pressButtonAndWait(COLLECTBUTTON_PNG_PATH,sleep = 2.5)
-        countTry+=1
-        if countTry >= 100:
-            return 401
-    
-    time.sleep(3)
+    time.sleep(10)
     result = findButtonImageAndPress(INPUTFIELD_PNG_PATH)
     if result == 401:
         exitWindow()
         return 401
-    insertPasswordToField(currentIndexFarm)
-    time.sleep(1)
+    insertPasswordToField()
     findButtonImageAndPress(APPROVEBUTTON_PNG_PATH)
         
-    # 7 second collecting
-    time.sleep(7)
+    # 10 second collecting
+    time.sleep(10)
 
 def generateFullPngPath(count):
     return FULLSAMPLE_PNG_PATH+str(count)+".png"
 
 def checkOnExceedCount(count):
     return count+1 if count < 3 else 1
-
-def checkOnExceedCountFarm(count):
-    return count+1 if count < maxCountFarm-1 else 0
     
 def getPositionOfFullTitle(countFullTitle):
     FULL_PNG_PATH = generateFullPngPath(countFullTitle)
+    print("Try to find FULL title",FULL_PNG_PATH)
     position = imagesearch(FULL_PNG_PATH)
-    print("Try to find FULL title",FULL_PNG_PATH,position)
     return position
 
-def switchTab():
-    global currentIndexFarm
-    #pyautogui.hotkey("ctrl","tab")
-    currentIndexFarm = checkOnExceedCountFarm(currentIndexFarm)
-    browserPosition = browsersPositions[currentIndexFarm]
-    pyautogui.click(browserPosition)
-    time.sleep(1)
-    resetMousePosition()
-    
 
-def findFullTitleOnFarm(tryCount):
-    countFullTitle = 1
-    fullTitlePosition = getPositionOfFullTitle(countFullTitle)
-    fullTitlePositionX,fullTitlePositionY = getXYpositionFromTuple(fullTitlePosition)
-    check = True
-    for countTryToFindFullTitle in range(tryCount):               
-        if fullTitlePositionX <= 0 or fullTitlePositionY <= 0:
+def shedule(func, nth_sec):
+    wait = 7200
+    Timer(wait, func).start()
+    Timer(wait + 1, lambda: shedule(func, nth_sec)).start()
+
+def run():
+    isFirstLoadGame = True
+    shedule(reloadSite, 10)
+    while gameLoaded:
+        countFullTitle = 1
+        fullTitlePosition = getPositionOfFullTitle(countFullTitle)
+        fullTitlePositionX,fullTitlePositionY = getXYpositionFromTuple(fullTitlePosition)
+        
+        while fullTitlePositionX == -1 or fullTitlePositionY == -1:
             fullTitlePosition = getPositionOfFullTitle(countFullTitle)
             fullTitlePositionX,fullTitlePositionY = getXYpositionFromTuple(fullTitlePosition)
             countFullTitle = checkOnExceedCount(countFullTitle)
-        else:
-            centerFullTitle = (fullTitlePositionX+40,fullTitlePositionY+100)
-            result = collectHoneyFromHive(centerFullTitle,currentIndexFarm)
-            check = False
-            break
-            #findFullTitleOnFarm(tryCount)
-    if check:
-        switchTab()
-        reloadSite()
-    return
+            
+        centerFullTitle = (fullTitlePositionX+40,fullTitlePositionY+100)
+        result = collectHoneyFromHive(centerFullTitle,isFirstLoadGame)
+        if result != 401:
+            isFirstLoadGame = False
 
-def run():
-    while gameLoaded:
-        serverConnectionError = findButtonImageAndPress(ERRORBUTTON_PNG_PATH)
-        findFullTitleOnFarm(20)
+'''
+homeCenterPosition = findHomeOnScreen()
+countHivesInRow = [2,2,1]
+hivesPositions = checkAllHives(countHivesInRow)
 
-accountCount = len(PASSWORD)
-browsersPositions = searchAndAddBrowsersPositions(accountCount)
-maxCountFarm = accountCount
-currentIndexFarm = 0
+run()
+'''
+
+
 gameLoaded = True
 run()
-
