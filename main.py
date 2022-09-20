@@ -38,12 +38,18 @@ def searchAndAddBrowsersPositions(countBrowsers):
 
     time.sleep(1)
 
-    offsetX = 50
-
     startX,startY = start
-    for i in range(countBrowsers):
-        nextPos = (startX+(offsetX*i),startY)
-        browsersPositions.append(nextPos)
+
+    if isHorizontalOrientationWindows:
+        offsetX = 50
+        for i in range(countBrowsers):
+            nextPos = (startX+(offsetX*i),startY)
+            browsersPositions.append(nextPos)
+    else:
+        offsetY = 50
+        for i in range(countBrowsers):
+            nextPos = (startX,startY+(offsetY*i))
+            browsersPositions.append(nextPos)
         
     return browsersPositions        
 
@@ -229,5 +235,6 @@ browsersPositions = searchAndAddBrowsersPositions(accountCount)
 maxCountFarm = accountCount
 currentIndexFarm = 0
 gameLoaded = True
+isHorizontalOrientationWindows = False
 run()
 
