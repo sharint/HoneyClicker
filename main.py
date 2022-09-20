@@ -11,7 +11,7 @@ HOME_PNG_PATH = "Png Files/home1.png"
 COLLECTBUTTON_PNG_PATH = "Png Files/Collect Button.png"
 PAWBUTTON_PNG_PATH = "Png Files/Paw Button.png"
 EXITBUTTON_PNG_PATH = "Png Files/Exit Button.png"
-PLAYBUTTON_PNG_PATH = "Png Files/Play Button1.png"
+PLAYBUTTON_PNG_PATH = "Png Files/Farm.png"
 APPROVEBUTTON_PNG_PATH = "Png Files/Approve Button.png"
 INPUTFIELD_PNG_PATH = "Png Files/Password.png"
 FULLSAMPLE_PNG_PATH = "Png Files/Full_"
@@ -20,6 +20,9 @@ ERRORBUTTON_PNG_PATH = "Png Files/Error button.png"
 
 
 PASSWORD = ["Bb1249ArTiS","L178Mm2XYB"]
+
+dragForBestVisionOffsetX = 720
+dragForBestVisionOffsetY = 110
 
 hexagonOffsetX = 200
 hexagonOffsetY = 150
@@ -98,7 +101,7 @@ def findButtonImageAndPress(imagePath):
     time.sleep(0.5)
     centerButtonPosition = findImageCenter(imagePosition,imagePath)
     pyautogui.moveTo(centerButtonPosition)
-    time.sleep(1)
+    time.sleep(0.5)
     pyautogui.click()
 
 def resetMousePosition():
@@ -106,13 +109,11 @@ def resetMousePosition():
 
 def reloadSite():
     reloadSiteHotKey = "F5"
-    time.sleep(1)
     pyautogui.press(reloadSiteHotKey)
-    time.sleep(5)
     result = findButtonImageAndPress(PLAYBUTTON_PNG_PATH)
     while result == 401:
         result = findButtonImageAndPress(PLAYBUTTON_PNG_PATH)
-    time.sleep(5)
+    time.sleep(1)
 
 def exitWindow():
     findButtonImageAndPress(EXITBUTTON_PNG_PATH)
@@ -180,6 +181,13 @@ def getPositionOfFullTitle(countFullTitle):
     print("Try to find FULL title",FULL_PNG_PATH,position)
     return position
 
+def dragMouseForBestVisionHives():
+    result = findButtonImageAndPress(HOME_PNG_PATH)
+    while result == 401:
+        result = findButtonImageAndPress(HOME_PNG_PATH)
+    pyautogui.moveTo(result)
+    pyautogui.drag(-dragForBestVisionOffsetX, -dragForBestVisionOffsetY, 0.3,button='left')
+
 def switchTab():
     global currentIndexFarm
     #pyautogui.hotkey("ctrl","tab")
@@ -192,23 +200,23 @@ def switchTab():
 
 def findFullTitleOnFarm(tryCount):
     countFullTitle = 1
-    fullTitlePosition = getPositionOfFullTitle(countFullTitle)
-    fullTitlePositionX,fullTitlePositionY = getXYpositionFromTuple(fullTitlePosition)
+    
     check = True
-    for countTryToFindFullTitle in range(tryCount):               
+    for countTryToFindFullTitle in range(tryCount):
+        fullTitlePosition = getPositionOfFullTitle(countFullTitle)
+        fullTitlePositionX,fullTitlePositionY = getXYpositionFromTuple(fullTitlePosition)
+        countFullTitle = checkOnExceedCount(countFullTitle)
         if fullTitlePositionX <= 0 or fullTitlePositionY <= 0:
-            fullTitlePosition = getPositionOfFullTitle(countFullTitle)
-            fullTitlePositionX,fullTitlePositionY = getXYpositionFromTuple(fullTitlePosition)
-            countFullTitle = checkOnExceedCount(countFullTitle)
+            continue
         else:
             centerFullTitle = (fullTitlePositionX+40,fullTitlePositionY+100)
             result = collectHoneyFromHive(centerFullTitle,currentIndexFarm)
             check = False
             break
-            #findFullTitleOnFarm(tryCount)
     if check:
         switchTab()
         reloadSite()
+        dragMouseForBestVisionHives()
     return
 
 def run():
